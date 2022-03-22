@@ -1,24 +1,25 @@
-import pika
+import pika, sys, os
 
-connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
-channel = connection.channel()
+def main():
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+    channel = connection.channel()
 
-channel.queue_declare(queue='master_queue')
+    channel.queue_declare(queue='hello')
 
+    def callback(ch, method, properties, body):
+        print(" [x] Received %r" % body)
 
-def callback(ch, method, properties, body):
-    print(f"{body}")
+    channel.basic_consume(queue='hello', on_message_callback=callback, auto_ack=True)
 
-
-channel.basic_consume(queue='master_queue', auto_ack=True, on_message_callback=callback)
-
-print(f"Waiting for messages...")
-
-try:
-    print("Use Ctrl+c to exit")
+    print(' [*] Waiting for messages. To exit press CTRL+C')
     channel.start_consuming()
-except KeyboardInterrupt:
-    print("Exiting")
-    channel.stop_consuming()
-    connection.close()
-    exit()
+
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        print('Interrupted')
+        try:
+            sys.exit(0)
+        except SystemExit:
+            os._exit(0)
