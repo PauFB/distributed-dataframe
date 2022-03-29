@@ -58,8 +58,11 @@ def min(axis):
 
 
 def callback(ch, method, properties, body):
-    response = pickle.dumps(eval(body))
-    channel.basic_publish(exchange='', routing_key='response_queue', body=response)
+    response = eval(body)
+    pickled_response = pickle.dumps(response)
+    print(response)
+    if response is not None:
+        channel.basic_publish(exchange='', routing_key='response_queue', body=pickled_response)
 
 
 channel.basic_consume(
