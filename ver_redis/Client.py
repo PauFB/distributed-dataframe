@@ -1,18 +1,17 @@
 import pickle
-
-import pandas as pd
 import redis
+import pandas as pd
 
 master = redis.from_url('redis://localhost:6379', db=0)
 n_workers = master.pubsub_numsub("methods")[0][1]
 
-# Read CSV
-master.publish("methods", "read_csv;../resources/df1.csv,../resources/df2.csv")
+# Read csv
+master.publish("methods", "read_csv('../df.csv')")
 
-# apply
+# Apply
 print("\nTest apply(lambda x: x + 2)")
 
-master.publish("methods", "apply;lambda x: x + 2")
+master.publish("methods", "apply('lambda x: x + 2')")
 
 n_results = master.llen("results")
 while n_results != n_workers:
@@ -23,10 +22,11 @@ for i in range(n_results):
     result = pd.concat([result, pickle.loads(master.lpop("results"))])
 print(result)
 
-# columns
+
+# Columns
 print("\nTest columns()")
 
-master.publish("methods", "columns")
+master.publish("methods", "columns()")
 
 n_results = master.llen("results")
 while n_results != n_workers:
@@ -37,10 +37,11 @@ for i in range(n_results):
     result = result.union(pickle.loads(master.lpop("results")))
 print(result)
 
-# groupby
+
+# GroupBy
 print("\nTest groupby(z).sum()")
 
-master.publish("methods", "groupby;z")
+master.publish("methods", "groupby('z')")
 
 n_results = master.llen("results")
 while n_results != n_workers:
@@ -51,10 +52,11 @@ for i in range(n_results):
     result = pd.concat([result, pickle.loads(master.lpop("results")).sum()])
 print(result)
 
-# head
-print("\nTest head()")
 
-master.publish("methods", "head;4")
+# Head
+print("\nTest head(2)")
+
+master.publish("methods", "head(2)")
 
 n_results = master.llen("results")
 while n_results != n_workers:
@@ -65,10 +67,11 @@ for i in range(n_results):
     result = pd.concat([result, pickle.loads(master.lpop("results"))])
 print(result)
 
-# isin
+
+# Isin
 print("\nTest isin([2, 4])")
 
-master.publish("methods", "isin;2,4")
+master.publish("methods", "isin([2, 4])")
 
 n_results = master.llen("results")
 while n_results != n_workers:
@@ -79,10 +82,11 @@ for i in range(n_results):
     result = pd.concat([result, pickle.loads(master.lpop("results"))])
 print(result)
 
-# items
+
+# Items
 print("\nTest items()")
 
-master.publish("methods", "items")
+master.publish("methods", "items()")
 
 n_results = master.llen("results")
 while n_results != n_workers:
@@ -93,10 +97,11 @@ for i in range(n_results):
     result = result + pickle.loads(master.lpop("results")) + "\n"
 print(result)
 
-# max
+
+# Max
 print("\nTest max(0)")
 
-master.publish("methods", "max;0")
+master.publish("methods", "max(0)")
 
 n_results = master.llen("results")
 while n_results != n_workers:
@@ -112,10 +117,11 @@ for i in range(n_results):
         j += 1
 print(result)
 
-# min
+
+# Min
 print("\nTest min(0)")
 
-master.publish("methods", "min;0")
+master.publish("methods", "min(0)")
 
 n_results = master.llen("results")
 while n_results != n_workers:

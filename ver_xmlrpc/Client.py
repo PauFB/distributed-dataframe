@@ -13,7 +13,7 @@ for worker in workers_list:
     client_worker_list.append(ServerProxy(worker, allow_none=True))
 
 # Read CSV
-csv_list = ["../resources/df1.csv", "../resources/df2.csv"]
+csv_list = ["../df1.csv", "../df2.csv", "../df3.csv"]
 
 i = 0
 for worker in client_worker_list:
