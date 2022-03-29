@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+message Url {
+    string url = 1;
+}
+
+message EmptyWorker {}
+
+message Func {
+    string func = 1;
+}
+
+message Dataframe {
+    bytes dataframe = 1;
+}
+
+message Index {
+    bytes index = 1;
+}
+
+message By {
+    string by = 1;
+}
+
+message N {
+    int64 n = 1;
+}
+
+message Values {
+    bytes values = 1;
+}
+
+message Items {
+    string items = 1;
+}
+
+message Axis {
+    int64 axis = 1;
+}
+
+message Series {
+    bytes series = 1;
+}
+
+service WorkerAPI {
+    rpc read_csv(Url) returns (EmptyWorker);
+
+    rpc apply(Func) returns (Dataframe);
+
+    rpc columns(EmptyWorker) returns (Index);
+
+    rpc groupby(By) returns (Dataframe);
+
+    rpc head(N) returns (Dataframe);
+
+    rpc isin(Values) returns (Dataframe);
+
+    rpc items(EmptyWorker) returns (Items);
+
+    rpc max(Axis) returns (Series);
+
+    rpc min(Axis) returns (Series);
+}

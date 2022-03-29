@@ -1,10 +1,9 @@
 import pickle
-
-import pandas as pd
 import redis
+import pandas as pd
 
 # Set up logging
-worker = redis.Redis(host='localhost', port=6379, db=2)
+worker = redis.Redis(host='localhost', port=6379, db=3)
 pubsub = worker.pubsub()
 pubsub.subscribe('methods')
 
@@ -16,7 +15,7 @@ df = pd.DataFrame()
 
 def read_csv(url):
     global df
-    df = pd.read_csv(url)
+    df = pd.read_csv(url, skiprows=[i for i in range(1, 9)])
 
 
 def apply(func):
@@ -40,6 +39,7 @@ def isin(values):
 
 
 def items():
+    """ list de tuples [label, contentSeries] """
     aux = ''
     for label, content in df.items():
         aux += f'label: {label}\n'
@@ -61,32 +61,7 @@ try:
     print("Use Ctrl+c to exit")
     for message in pubsub.listen():
         if message['type'] != 'subscribe':
-            method = message['data'].decode("UTF-8").split(";")[0]
-            arg = ""
-            if len(message['data'].decode("UTF-8").split(";")) == 2:
-                arg = message['data'].decode("UTF-8").split(";")[1]
-            if method == 'read_csv':
-                arg = arg.split(",")[1]
-                read_csv(arg)
-            elif method == 'apply':
-                apply(arg)
-            elif method == 'columns':
-                columns()
-            elif method == 'groupby':
-                groupby(arg)
-            elif method == 'head':
-                head(int(arg))
-            elif method == 'isin':
-                arg = arg.split(",")
-                for i in range(0, len(arg)):
-                    arg[i] = int(arg[i])
-                isin(arg)
-            elif method == 'items':
-                items()
-            elif method == 'max':
-                max(int(arg))
-            elif method == 'min':
-                min(int(arg))
+            eval(message['data'])
 except KeyboardInterrupt:
     print("Exiting")
     worker.flushdb()

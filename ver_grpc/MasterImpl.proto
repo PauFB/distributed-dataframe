@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+message Worker {
+  string worker = 1;
+}
+
+message WorkerList {
+  repeated string workerList = 3;
+}
+
+message EmptyMaster {}
+
+service MasterAPI {
+  rpc add_node(Worker) returns (EmptyMaster);
+
+  rpc remove_node(Worker) returns (EmptyMaster);
+
+  rpc get_workers(EmptyMaster) returns (WorkerList);
+}
