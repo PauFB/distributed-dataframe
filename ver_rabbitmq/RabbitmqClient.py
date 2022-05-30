@@ -34,12 +34,13 @@ print(result)
 
 # columns()
 print("\nTest columns()")
+result = pd.Index([])
 channel.basic_publish(exchange='worker_exchange', routing_key='', body="columns()")
 while channel.queue_declare(queue='response_queue').method.message_count != n_workers:
     pass
 while channel.queue_declare(queue='response_queue').method.message_count > 0:
-    worker_result = pickle.loads(channel.basic_get(queue='response_queue')[2])
-    print(worker_result)
+    result = result.union(pickle.loads(channel.basic_get(queue='response_queue')[2]))
+print(result)
 
 # GroupBy
 print("\nTest groupby(z).sum()")
