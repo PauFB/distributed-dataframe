@@ -1,4 +1,6 @@
 import pickle
+import sys
+import time
 import grpc
 import pandas as pd
 import redis
@@ -6,6 +8,8 @@ import redis
 # import the generated classes
 import Worker_pb2
 import Worker_pb2_grpc
+
+start = time.time()
 
 # Get workers
 master = redis.from_url('redis://localhost:6379', db=0)
@@ -68,7 +72,7 @@ print(result)
 
 # Max
 print("\nTest max(0)")
-result = pd.Series([0, 0, 0], index=['x', 'y', 'z'])
+result = pd.Series([-sys.maxsize - 1, -sys.maxsize - 1, -sys.maxsize - 1], index=['x', 'y', 'z'])
 for worker in client_worker_list:
     max_wk = pickle.loads(worker.max(Worker_pb2.Axis(axis=0)).series)
     i = 0
@@ -80,7 +84,7 @@ print(result)
 
 # Min
 print("\nTest min(0)")
-result = pd.Series([999, 999, 999], index=['x', 'y', 'z'])
+result = pd.Series([sys.maxsize, sys.maxsize, sys.maxsize], index=['x', 'y', 'z'])
 for worker in client_worker_list:
     max_wk = pickle.loads(worker.min(Worker_pb2.Axis(axis=0)).series)
     i = 0
@@ -90,4 +94,5 @@ for worker in client_worker_list:
         i += 1
 print(result)
 
-
+finish = time.time()
+print("Execution time: " + str(finish-start))

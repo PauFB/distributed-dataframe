@@ -12,7 +12,7 @@ def callback(ch, method, properties, body):
 
 channel.basic_consume(queue='master_queue', auto_ack=True, on_message_callback=callback)
 
-print(f"Waiting for messages...")
+print("Waiting for messages...")
 
 try:
     print("Use Ctrl+c to exit")

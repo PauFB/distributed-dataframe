@@ -1,6 +1,10 @@
 import pickle
+import sys
+import time
 import redis
 import pandas as pd
+
+start = time.time()
 
 master = redis.from_url('redis://localhost:6379', db=0)
 n_workers = master.pubsub_numsub("methods")[0][1]
@@ -107,7 +111,7 @@ n_results = master.llen("results")
 while n_results != n_workers:
     n_results = master.llen("results")
 
-result = pd.Series([0, 0, 0], index=['x', 'y', 'z'])
+result = pd.Series([-sys.maxsize - 1, -sys.maxsize - 1, -sys.maxsize - 1], index=['x', 'y', 'z'])
 for i in range(n_results):
     max_wk = pickle.loads(master.lpop("results"))
     j = 0
@@ -127,7 +131,7 @@ n_results = master.llen("results")
 while n_results != n_workers:
     n_results = master.llen("results")
 
-result = pd.Series([999, 999, 999], index=['x', 'y', 'z'])
+result = pd.Series([sys.maxsize, sys.maxsize, sys.maxsize], index=['x', 'y', 'z'])
 for i in range(n_results):
     max_wk = pickle.loads(master.lpop("results"))
     j = 0
@@ -136,3 +140,6 @@ for i in range(n_results):
             result[j] = value
         j += 1
 print(result)
+
+finish = time.time()
+print("Execution time: " + str(finish-start))

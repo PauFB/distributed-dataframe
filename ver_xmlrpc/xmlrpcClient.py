@@ -1,7 +1,10 @@
 import pickle
+import sys
+import time
 from xmlrpc.client import ServerProxy
-
 import pandas as pd
+
+start = time.time()
 
 # Communication with master
 master = ServerProxy('http://localhost:8000', allow_none=True)
@@ -65,7 +68,7 @@ print(result)
 
 # max
 print("\nTest max(0)")
-result = pd.Series([0, 0, 0], index=['x', 'y', 'z'])
+result = pd.Series([-sys.maxsize - 1, -sys.maxsize - 1, -sys.maxsize - 1], index=['x', 'y', 'z'])
 for worker in client_worker_list:
     max_wk = pickle.loads(worker.max(0).data)
     i = 0
@@ -77,7 +80,7 @@ print(result)
 
 # min
 print("\nTest min(0)")
-result = pd.Series([999, 999, 999], index=['x', 'y', 'z'])
+result = pd.Series([sys.maxsize, sys.maxsize, sys.maxsize], index=['x', 'y', 'z'])
 for worker in client_worker_list:
     max_wk = pickle.loads(worker.min(0).data)
     i = 0
@@ -86,6 +89,9 @@ for worker in client_worker_list:
             result[i] = value
         i += 1
 print(result)
+
+finish = time.time()
+print("Execution time: " + str(finish-start))
 
 print("\n\n*** Individual Tests ***\n\n")
 for worker in client_worker_list:

@@ -3,10 +3,9 @@ from urllib import request, response
 import grpc
 from concurrent import futures
 import time
+import redis
 
 # import the generated classes
-import MasterImpl_pb2
-import MasterImpl_pb2_grpc
 import Worker_pb2
 import Worker_pb2_grpc
 
@@ -69,12 +68,12 @@ def general_worker(port):
     Worker_pb2_grpc.add_WorkerAPIServicer_to_server(WorkerServicer(), worker)
 
     # Set up client to master
-    master = MasterImpl_pb2_grpc.MasterAPIStub(grpc.insecure_channel('localhost:50050'))
+    master = redis.from_url('redis://localhost:6379', db=0)
 
     print('Starting server. Listening on port ' + str(port))
     worker.add_insecure_port('[::]:' + str(port))
 
-    master.add_node(MasterImpl_pb2.Worker(worker='localhost:' + str(port)))
+    master.rpush("workers", 'localhost:' + str(port))
     worker.start()
 
     # since server.start() will not block,
@@ -83,5 +82,5 @@ def general_worker(port):
         while True:
             time.sleep(86400)
     except KeyboardInterrupt:
-        master.remove_node(MasterImpl_pb2.Worker(worker='localhost:' + str(port)))
+        master.lrem("workers", 0, 'localhost:' + str(port))
         worker.stop(0)
