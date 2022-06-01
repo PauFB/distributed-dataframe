@@ -1,14 +1,13 @@
-from urllib import request, response
-import grpc
-from concurrent import futures
 import time
+from concurrent import futures
 
+import grpc
+
+# import the original worker.py
+import MasterImpl
 # import the generated classes
 import MasterImpl_pb2
 import MasterImpl_pb2_grpc
-
-# import the original Worker.py
-import MasterImpl
 
 
 # create a class to define the server functions

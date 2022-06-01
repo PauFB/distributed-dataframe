@@ -1,4 +1,5 @@
 import pickle
+
 import pandas as pd
 
 df = pd.DataFrame()
@@ -34,7 +35,6 @@ def isin(values):
 
 
 def items():
-    """ list de tuples [label, contentSeries] """
     aux = ''
     for label, content in df.items():
         aux += f'label: {label}\n'
