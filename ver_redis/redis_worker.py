@@ -1,6 +1,7 @@
 import pickle
-import redis
+
 import pandas as pd
+import redis
 
 df = pd.DataFrame()
 
@@ -34,7 +35,6 @@ def general_worker(db):
         master.rpush("results", pickle.dumps(df.isin(values)))
 
     def items():
-        """ list de tuples [label, contentSeries] """
         aux = ''
         for label, content in df.items():
             aux += f'label: {label}\n'

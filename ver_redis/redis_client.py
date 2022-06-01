@@ -1,19 +1,20 @@
 import pickle
 import sys
 import time
-import redis
+
 import pandas as pd
+import redis
 
 start = time.time()
 
 master = redis.from_url('redis://localhost:6379', db=0)
 n_workers = master.pubsub_numsub("methods")[0][1]
 
-# Read csv
+# Read CSV
 master.publish("methods", "read_csv('../df.csv')")
 
-# Apply
-print("\nTest apply(lambda x: x + 2)")
+# apply()
+print("\nTesting apply(lambda x: x + 2)")
 
 master.publish("methods", "apply('lambda x: x + 2')")
 
@@ -26,9 +27,8 @@ for i in range(n_results):
     result = pd.concat([result, pickle.loads(master.lpop("results"))])
 print(result)
 
-
-# Columns
-print("\nTest columns()")
+# columns()
+print("\nTesting columns()")
 
 master.publish("methods", "columns()")
 
@@ -41,9 +41,8 @@ for i in range(n_results):
     result = result.union(pickle.loads(master.lpop("results")))
 print(result)
 
-
-# GroupBy
-print("\nTest groupby(z).sum()")
+# groupby()
+print("\nTesting groupby(z).sum()")
 
 master.publish("methods", "groupby('z')")
 
@@ -56,9 +55,8 @@ for i in range(n_results):
     result = pd.concat([result, pickle.loads(master.lpop("results")).sum()])
 print(result)
 
-
-# Head
-print("\nTest head(2)")
+# head()
+print("\nTesting head(2)")
 
 master.publish("methods", "head(2)")
 
@@ -71,9 +69,8 @@ for i in range(n_results):
     result = pd.concat([result, pickle.loads(master.lpop("results"))])
 print(result)
 
-
-# Isin
-print("\nTest isin([2, 4])")
+# isin()
+print("\nTesting isin([2, 4])")
 
 master.publish("methods", "isin([2, 4])")
 
@@ -86,9 +83,8 @@ for i in range(n_results):
     result = pd.concat([result, pickle.loads(master.lpop("results"))])
 print(result)
 
-
-# Items
-print("\nTest items()")
+# items()
+print("\nTesting items()")
 
 master.publish("methods", "items()")
 
@@ -101,9 +97,8 @@ for i in range(n_results):
     result = result + pickle.loads(master.lpop("results")) + "\n"
 print(result)
 
-
-# Max
-print("\nTest max(0)")
+# max()
+print("\nTesting max(0)")
 
 master.publish("methods", "max(0)")
 
@@ -121,9 +116,8 @@ for i in range(n_results):
         j += 1
 print(result)
 
-
-# Min
-print("\nTest min(0)")
+# min()
+print("\nTesting min(0)")
 
 master.publish("methods", "min(0)")
 
@@ -142,4 +136,4 @@ for i in range(n_results):
 print(result)
 
 finish = time.time()
-print("Execution time: " + str(finish-start))
+print("Execution time: " + str(finish - start))

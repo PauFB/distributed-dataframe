@@ -2,6 +2,7 @@ import pickle
 import sys
 import time
 from xmlrpc.client import ServerProxy
+
 import pandas as pd
 
 start = time.time()
@@ -20,18 +21,17 @@ csv_list = ["../df1.csv", "../df2.csv", "../df3.csv"]
 
 i = 0
 for worker in client_worker_list:
-    # worker.read_csv(csv_list.__getitem__(i))
     worker.read_csv(csv_list[i])
     i += 1
 
-# Apply
+# apply()
 print("\nTest apply(lambda x: x + 2)")
 result = pd.DataFrame(columns=['x', 'y', 'z'])
 for worker in client_worker_list:
     result = pd.concat([result, pickle.loads(worker.apply("lambda x: x + 2").data)])
 print(result)
 
-# Columns
+# columns()
 print("\nTest columns()")
 result = pd.Index([])
 for worker in client_worker_list:
@@ -45,28 +45,28 @@ for worker in client_worker_list:
     result = pd.concat([result, pickle.loads(worker.groupby('z').data).sum()])
 print(result)
 
-# Head
+# head()
 print("\nTest head()")
 result = pd.DataFrame(columns=['x', 'y', 'z'])
 for worker in client_worker_list:
     result = pd.concat([result, pickle.loads(worker.head().data)])
 print(result)
 
-# isin
+# isin()
 print("\nTest isin([2, 4])")
 result = pd.DataFrame(columns=['x', 'y', 'z'])
 for worker in client_worker_list:
     result = pd.concat([result, pickle.loads(worker.isin([2, 4]).data)])
 print(result)
 
-# items
+# items()
 print("\nTest items")
 result = ''
 for worker in client_worker_list:
     result = result + "\n" + worker.items()
 print(result)
 
-# max
+# max()
 print("\nTest max(0)")
 result = pd.Series([-sys.maxsize - 1, -sys.maxsize - 1, -sys.maxsize - 1], index=['x', 'y', 'z'])
 for worker in client_worker_list:
@@ -78,7 +78,7 @@ for worker in client_worker_list:
         i += 1
 print(result)
 
-# min
+# min()
 print("\nTest min(0)")
 result = pd.Series([sys.maxsize, sys.maxsize, sys.maxsize], index=['x', 'y', 'z'])
 for worker in client_worker_list:
@@ -91,23 +91,23 @@ for worker in client_worker_list:
 print(result)
 
 finish = time.time()
-print("Execution time: " + str(finish-start))
+print("Execution time: " + str(finish - start))
 
 print("\n\n*** Individual Tests ***\n\n")
 for worker in client_worker_list:
-    print("Test apply(lambda x: x + 2)")
+    print("Testing apply(lambda x: x + 2)")
     print(pickle.loads(worker.apply("lambda x: x + 2").data))
-    print("Test columns()")
+    print("Testing columns()")
     print(pickle.loads(worker.columns().data))
-    print("Test groupby(x).sum()")
+    print("Testing groupby(x).sum()")
     print(pickle.loads(worker.groupby('x').data).sum())
-    print("Test head()")
+    print("Testing head()")
     print(pickle.loads(worker.head().data))
-    print("Test isin([2, 4])")
+    print("Testing isin([2, 4])")
     print(pickle.loads(worker.isin([2, 4]).data))
-    print("Test items()")
+    print("Testing items()")
     print(worker.items())
-    print("Test max(0)")
+    print("Testing max(0)")
     print(pickle.loads(worker.max(0).data))
-    print("Test min(0)")
+    print("Testing min(0)")
     print(pickle.loads(worker.min(0).data))

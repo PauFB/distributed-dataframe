@@ -1,9 +1,10 @@
+import os
 import pickle
 import sys
 import time
+
 import pandas as pd
 import pika
-import os
 
 start = time.time()
 
@@ -14,7 +15,6 @@ response_queue = channel.queue_declare(queue='response_queue')
 
 channel.queue_purge(queue='response_queue')
 
-
 stream = os.popen('curl -i -u guest:guest http://localhost:15672/api/exchanges/%2F/worker_exchange/bindings/source')
 output = stream.read()
 n_workers = output.count('source')
@@ -22,8 +22,8 @@ n_workers = output.count('source')
 # Read CSV
 channel.basic_publish(exchange='worker_exchange', routing_key='', body="read_csv('../df.csv')")
 
-# Apply
-print("\nTest apply(lambda x: x + 2)")
+# apply()
+print("\nTesting apply(lambda x: x + 2)")
 result = pd.DataFrame(columns=['x', 'y', 'z'])
 channel.basic_publish(exchange='worker_exchange', routing_key='', body="apply(\"lambda x: x + 2\")")
 while channel.queue_declare(queue='response_queue').method.message_count != n_workers:
@@ -33,7 +33,7 @@ while channel.queue_declare(queue='response_queue').method.message_count > 0:
 print(result)
 
 # columns()
-print("\nTest columns()")
+print("\nTesting columns()")
 result = pd.Index([])
 channel.basic_publish(exchange='worker_exchange', routing_key='', body="columns()")
 while channel.queue_declare(queue='response_queue').method.message_count != n_workers:
@@ -42,8 +42,8 @@ while channel.queue_declare(queue='response_queue').method.message_count > 0:
     result = result.union(pickle.loads(channel.basic_get(queue='response_queue')[2]))
 print(result)
 
-# GroupBy
-print("\nTest groupby(z).sum()")
+# groupby()
+print("\nTesting groupby(z).sum()")
 result = pd.DataFrame(columns=['x', 'y'])
 channel.basic_publish(exchange='worker_exchange', routing_key='', body="groupby(\"z\").sum()")
 while channel.queue_declare(queue='response_queue').method.message_count != n_workers:
@@ -53,7 +53,7 @@ while channel.queue_declare(queue='response_queue').method.message_count > 0:
 print(result)
 
 # head()
-print("\nTest head(5)")
+print("\nTesting head(5)")
 dataframe = pd.DataFrame()
 channel.basic_publish(exchange='worker_exchange', routing_key='', body="head(5)")
 while channel.queue_declare(queue='response_queue').method.message_count != n_workers:
@@ -62,8 +62,8 @@ while channel.queue_declare(queue='response_queue').method.message_count > 0:
     dataframe = pd.concat([dataframe, pickle.loads(channel.basic_get(queue='response_queue')[2])])
 print(dataframe)
 
-# isin
-print("\nTest isin([2, 4])")
+# isin()
+print("\nTesting isin([2, 4])")
 result = pd.DataFrame(columns=['x', 'y', 'z'])
 channel.basic_publish(exchange='worker_exchange', routing_key='', body="isin([2, 4])")
 while channel.queue_declare(queue='response_queue').method.message_count != n_workers:
@@ -72,8 +72,8 @@ while channel.queue_declare(queue='response_queue').method.message_count > 0:
     result = pd.concat([result, pickle.loads(channel.basic_get(queue='response_queue')[2])])
 print(result)
 
-# items
-print("\nTest items")
+# items()
+print("\nTesting items")
 result = ''
 channel.basic_publish(exchange='worker_exchange', routing_key='', body="items()")
 while channel.queue_declare(queue='response_queue').method.message_count != n_workers:
@@ -82,8 +82,8 @@ while channel.queue_declare(queue='response_queue').method.message_count > 0:
     result = result + "\n" + pickle.loads(channel.basic_get(queue='response_queue')[2])
 print(result)
 
-# max
-print("\nTest max(0)")
+# max()
+print("\nTesting max(0)")
 result = pd.Series([-sys.maxsize - 1, -sys.maxsize - 1, -sys.maxsize - 1], index=['x', 'y', 'z'])
 channel.basic_publish(exchange='worker_exchange', routing_key='', body="max(0)")
 while channel.queue_declare(queue='response_queue').method.message_count != n_workers:
@@ -97,8 +97,8 @@ while channel.queue_declare(queue='response_queue').method.message_count > 0:
         i += 1
 print(result)
 
-# min
-print("\nTest min(0)")
+# min()
+print("\nTesting min(0)")
 result = pd.Series([sys.maxsize, sys.maxsize, sys.maxsize], index=['x', 'y', 'z'])
 channel.basic_publish(exchange='worker_exchange', routing_key='', body="min(0)")
 while channel.queue_declare(queue='response_queue').method.message_count != n_workers:
