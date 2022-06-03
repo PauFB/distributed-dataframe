@@ -8,6 +8,7 @@ import redis
 # import the generated classes
 import Worker_pb2
 import Worker_pb2_grpc
+import worker
 
 
 def general_worker(port):
@@ -59,19 +60,19 @@ def general_worker(port):
             return response
 
     # Create a gRPC-distributed-dataframe server
-    worker = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    worker_server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
 
     # Add the defined class to the created server
-    Worker_pb2_grpc.add_WorkerAPIServicer_to_server(WorkerServicer(), worker)
+    Worker_pb2_grpc.add_WorkerAPIServicer_to_server(WorkerServicer(), worker_server)
 
     # Set up client to master
     master = redis.from_url('redis://localhost:6379', db=0)
 
     print('Starting server. Listening on port ' + str(port))
-    worker.add_insecure_port('[::]:' + str(port))
+    worker_server.add_insecure_port('[::]:' + str(port))
 
     master.rpush("workers", 'localhost:' + str(port))
-    worker.start()
+    worker_server.start()
 
     # Given server.start() will not block the execution,
     # a sleeping loop is added to keep the instance running.
@@ -80,4 +81,4 @@ def general_worker(port):
             time.sleep(86400)
     except KeyboardInterrupt:
         master.lrem("workers", 0, 'localhost:' + str(port))
-        worker.stop(0)
+        worker_server.stop(0)

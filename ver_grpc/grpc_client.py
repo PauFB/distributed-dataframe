@@ -11,7 +11,7 @@ import MasterImpl_pb2_grpc
 import Worker_pb2
 import Worker_pb2_grpc
 
-start = time.time()
+absolute_start_time = time.time()
 
 master = MasterImpl_pb2_grpc.MasterAPIStub(grpc.insecure_channel('localhost:50050'))
 
@@ -34,48 +34,67 @@ for worker in client_worker_list:
 # apply()
 print("\nTesting apply(lambda x: x + 2)")
 result = pd.DataFrame(columns=['x', 'y', 'z'])
+start = time.time()
 for worker in client_worker_list:
     result = pd.concat([result, pickle.loads(worker.apply(Worker_pb2.Func(func="lambda x: x + 2")).dataframe)])
+end = time.time()
 print(result)
+print("Execution time: " + str(end - start))
 
 # columns()
 print("\nTesting columns()")
 result = pd.Index([])
+start = time.time()
 for worker in client_worker_list:
     result = result.union(pickle.loads(worker.columns(Worker_pb2.EmptyWorker()).index))
+end = time.time()
 print(result)
+print("Execution time: " + str(end - start))
 
 # groupby()
 print("\nTesting groupby(z).sum()")
 result = pd.DataFrame(columns=['x', 'y'])
+start = time.time()
 for worker in client_worker_list:
     result = pd.concat([result, pickle.loads(worker.groupby(Worker_pb2.By(by='z')).dataframe).sum()])
+end = time.time()
 print(result)
+print("Execution time: " + str(end - start))
 
 # head()
 print("\nTesting head()")
 result = pd.DataFrame(columns=['x', 'y', 'z'])
+start = time.time()
 for worker in client_worker_list:
     result = pd.concat([result, pickle.loads(worker.head(Worker_pb2.N(n=4)).dataframe)])
+end = time.time()
 print(result)
+print("Execution time: " + str(end - start))
 
 # isin()
 print("\nTesting isin([2, 4])")
 result = pd.DataFrame(columns=['x', 'y', 'z'])
+start = time.time()
 for worker in client_worker_list:
     result = pd.concat([result, pickle.loads(worker.isin(Worker_pb2.Values(values=pickle.dumps([2, 4]))).dataframe)])
+end = time.time()
 print(result)
+print("Execution time: " + str(end - start))
 
 # items()
 print("\nTesting items()")
 result = ''
+start = time.time()
 for worker in client_worker_list:
     result = result + worker.items(Worker_pb2.EmptyWorker()).items + "\n"
+end = time.time()
 print(result)
+print("Execution time: " + str(end - start))
 
 # max()
 print("\nTesting max(0)")
 result = pd.Series([-sys.maxsize - 1, -sys.maxsize - 1, -sys.maxsize - 1], index=['x', 'y', 'z'])
+start = time.time()
 for worker in client_worker_list:
     max_wk = pickle.loads(worker.max(Worker_pb2.Axis(axis=0)).series)
     i = 0
@@ -83,11 +102,14 @@ for worker in client_worker_list:
         if value > result[i]:
             result[i] = value
         i += 1
+end = time.time()
 print(result)
+print("Execution time: " + str(end - start))
 
 # min()
 print("\nTesting min(0)")
 result = pd.Series([sys.maxsize, sys.maxsize, sys.maxsize], index=['x', 'y', 'z'])
+start = time.time()
 for worker in client_worker_list:
     max_wk = pickle.loads(worker.min(Worker_pb2.Axis(axis=0)).series)
     i = 0
@@ -95,7 +117,9 @@ for worker in client_worker_list:
         if value < result[i]:
             result[i] = value
         i += 1
+end = time.time()
 print(result)
+print("Execution time: " + str(end - start))
 
-finish = time.time()
-print("Execution time: " + str(finish - start))
+absolute_end_time = time.time()
+print("\nTotal execution time: " + str(absolute_end_time - absolute_start_time))

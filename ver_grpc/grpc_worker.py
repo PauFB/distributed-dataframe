@@ -9,6 +9,7 @@ import MasterImpl_pb2
 import MasterImpl_pb2_grpc
 import Worker_pb2
 import Worker_pb2_grpc
+import worker
 
 
 def general_worker(port):
@@ -60,19 +61,19 @@ def general_worker(port):
             return response
 
     # Create a gRPC-distributed-dataframe server
-    worker = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    worker_server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
 
     # Add the defined class to the created server
-    Worker_pb2_grpc.add_WorkerAPIServicer_to_server(WorkerServicer(), worker)
+    Worker_pb2_grpc.add_WorkerAPIServicer_to_server(WorkerServicer(), worker_server)
 
     # Set up client to master
-    master = MasterImpl_pb2_grpc.MasterAPIStub(grpc.insecure_channel('localhost:50050'))
+    master_server = MasterImpl_pb2_grpc.MasterAPIStub(grpc.insecure_channel('localhost:50050'))
 
     print('Starting server. Listening on port ' + str(port))
-    worker.add_insecure_port('[::]:' + str(port))
+    worker_server.add_insecure_port('[::]:' + str(port))
 
-    master.add_node(MasterImpl_pb2.Worker(worker='localhost:' + str(port)))
-    worker.start()
+    master_server.add_node(MasterImpl_pb2.Worker(worker='localhost:' + str(port)))
+    worker_server.start()
 
     # Given server.start() will not block the execution,
     # a sleeping loop is added to keep the instance running.
@@ -80,5 +81,5 @@ def general_worker(port):
         while True:
             time.sleep(86400)
     except KeyboardInterrupt:
-        master.remove_node(MasterImpl_pb2.Worker(worker='localhost:' + str(port)))
+        master_server.remove_node(MasterImpl_pb2.Worker(worker='localhost:' + str(port)))
         worker.stop(0)
