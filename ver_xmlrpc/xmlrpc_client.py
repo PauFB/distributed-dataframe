@@ -5,7 +5,7 @@ from xmlrpc.client import ServerProxy
 
 import pandas as pd
 
-start = time.time()
+absolute_start_time = time.time()
 
 # Communication with master
 master = ServerProxy('http://localhost:8000', allow_none=True)
@@ -27,48 +27,67 @@ for worker in client_worker_list:
 # apply()
 print("\nTest apply(lambda x: x + 2)")
 result = pd.DataFrame(columns=['x', 'y', 'z'])
+start = time.time()
 for worker in client_worker_list:
     result = pd.concat([result, pickle.loads(worker.apply("lambda x: x + 2").data)])
+end = time.time()
 print(result)
+print("Execution time: " + str(end - start))
 
 # columns()
 print("\nTest columns()")
 result = pd.Index([])
+start = time.time()
 for worker in client_worker_list:
     result = result.union(pickle.loads(worker.columns().data))
+end = time.time()
 print(result)
+print("Execution time: " + str(end - start))
 
 # GroupBy
 print("\nTest groupby(z).sum()")
 result = pd.DataFrame(columns=['x', 'y'])
+start = time.time()
 for worker in client_worker_list:
     result = pd.concat([result, pickle.loads(worker.groupby('z').data).sum()])
+end = time.time()
 print(result)
+print("Execution time: " + str(end - start))
 
 # head()
 print("\nTest head()")
 result = pd.DataFrame(columns=['x', 'y', 'z'])
+start = time.time()
 for worker in client_worker_list:
     result = pd.concat([result, pickle.loads(worker.head().data)])
+end = time.time()
 print(result)
+print("Execution time: " + str(end - start))
 
 # isin()
 print("\nTest isin([2, 4])")
 result = pd.DataFrame(columns=['x', 'y', 'z'])
+start = time.time()
 for worker in client_worker_list:
     result = pd.concat([result, pickle.loads(worker.isin([2, 4]).data)])
+end = time.time()
 print(result)
+print("Execution time: " + str(end - start))
 
 # items()
 print("\nTest items")
 result = ''
+start = time.time()
 for worker in client_worker_list:
     result = result + "\n" + worker.items()
+end = time.time()
 print(result)
+print("Execution time: " + str(end - start))
 
 # max()
 print("\nTest max(0)")
 result = pd.Series([-sys.maxsize - 1, -sys.maxsize - 1, -sys.maxsize - 1], index=['x', 'y', 'z'])
+start = time.time()
 for worker in client_worker_list:
     max_wk = pickle.loads(worker.max(0).data)
     i = 0
@@ -76,11 +95,14 @@ for worker in client_worker_list:
         if value > result[i]:
             result[i] = value
         i += 1
+end = time.time()
 print(result)
+print("Execution time: " + str(end - start))
 
 # min()
 print("\nTest min(0)")
 result = pd.Series([sys.maxsize, sys.maxsize, sys.maxsize], index=['x', 'y', 'z'])
+start = time.time()
 for worker in client_worker_list:
     max_wk = pickle.loads(worker.min(0).data)
     i = 0
@@ -88,12 +110,14 @@ for worker in client_worker_list:
         if value < result[i]:
             result[i] = value
         i += 1
+end = time.time()
 print(result)
+print("Execution time: " + str(end - start))
 
-finish = time.time()
-print("Execution time: " + str(finish - start))
+absolute_end_time = time.time()
+print("\nTotal execution time: " + str(absolute_end_time - absolute_start_time))
 
-print("\n\n*** Individual Tests ***\n\n")
+print("\n\n*** Individual tests ***\n\n")
 for worker in client_worker_list:
     print("Testing apply(lambda x: x + 2)")
     print(pickle.loads(worker.apply("lambda x: x + 2").data))
